@@ -12,3 +12,11 @@ prompt = ChatPromptTemplate.from_messages(
 )
 
 chain = prompt | llm
+
+
+def extract_text(content) -> str:
+    if isinstance(content, list):
+        return "".join(
+            block.get("text", "") for block in content if isinstance(block, dict)
+        )
+    return content
