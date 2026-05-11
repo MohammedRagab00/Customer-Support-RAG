@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ask Anything</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #f5f2ec;
+        --surface: #ffffff;
+        --ink: #1a1a18;
+        --muted: #8a8880;
+        --accent: #c84b2f;
+        --border: #e2ddd6;
+        --response-bg: #fefcf8;
+      }
+
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--bg);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        width: 100%;
+        max-width: 680px;
+        overflow: hidden;
+        box-shadow: 0 2px 24px rgba(0, 0, 0, 0.06);
+      }
+
+      .card-header {
+        padding: 2rem 2.5rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .label {
+        font-size: 0.7rem;
+        font-weight: 500;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 0.4rem;
+      }
+
+      h1 {
+        font-family: "DM Serif Display", serif;
+        font-size: 1.75rem;
+        color: var(--ink);
+        line-height: 1.2;
+      }
+
+      .card-body {
+        padding: 2rem 2.5rem;
+      }
+
+      .input-row {
+        display: flex;
+        gap: 0.75rem;
+        align-items: stretch;
+      }
+
+      input[type="text"] {
+        flex: 1;
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.95rem;
+        font-weight: 300;
+        color: var(--ink);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        padding: 0.75rem 1rem;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      input[type="text"]::placeholder {
+        color: var(--muted);
+      }
+      input[type="text"]:focus {
+        border-color: var(--ink);
+      }
+
+      button {
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #fff;
+        background: var(--ink);
+        border: none;
+        border-radius: 3px;
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+      }
+
+      button:hover {
+        background: var(--accent);
+      }
+      button:disabled {
+        background: var(--muted);
+        cursor: not-allowed;
+      }
+
+      .output-wrap {
+        margin-top: 1.5rem;
+        display: none;
+      }
+
+      .output-wrap.visible {
+        display: block;
+      }
+
+      .output-label {
+        font-size: 0.65rem;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.6rem;
+      }
+
+      #output {
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.95rem;
+        font-weight: 300;
+        line-height: 1.75;
+        color: var(--ink);
+        background: var(--response-bg);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--accent);
+        border-radius: 3px;
+        padding: 1.25rem 1.5rem;
+        min-height: 3rem;
+      }
+
+      #output h1,
+      #output h2,
+      #output h3 {
+        font-family: "DM Serif Display", serif;
+        margin: 1rem 0 0.4rem;
+      }
+      #output p {
+        margin-bottom: 0.75rem;
+      }
+      #output p:last-child {
+        margin-bottom: 0;
+      }
+      #output ul,
+      #output ol {
+        padding-left: 1.5rem;
+        margin-bottom: 0.75rem;
+      }
+      #output li {
+        margin-bottom: 0.25rem;
+      }
+      #output strong {
+        font-weight: 500;
+      }
+      #output code {
+        background: #f0ece4;
+        padding: 0.1em 0.4em;
+        border-radius: 3px;
+        font-size: 0.88em;
+      }
+      #output pre {
+        background: #f0ece4;
+        padding: 1rem;
+        border-radius: 3px;
+        overflow-x: auto;
+        margin-bottom: 0.75rem;
+      }
+      #output pre code {
+        background: none;
+        padding: 0;
+      }
+
+      .cursor {
+        display: inline-block;
+        width: 2px;
+        height: 1em;
+        background: var(--accent);
+        margin-left: 2px;
+        vertical-align: text-bottom;
+        animation: blink 0.8s step-end infinite;
+      }
+
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="card-header">
+        <div class="label">Support Assistant</div>
+        <h1>Ask Anything</h1>
+      </div>
+      <div class="card-body">
+        <form id="chatForm">
+          <div class="input-row">
+            <input
+              type="text"
+              name="user_input"
+              id="user_input"
+              placeholder="Type your question…"
+              autocomplete="off"
+              required
+            />
+            <button type="submit" id="askBtn">Ask</button>
+          </div>
+        </form>
+
+        <div class="output-wrap" id="outputWrap">
+          <div class="output-label">Response</div>
+          <div id="output"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("chatForm");
+      const output = document.getElementById("output");
+      const outputWrap = document.getElementById("outputWrap");
+      const askBtn = document.getElementById("askBtn");
+      let cursor = null;
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        output.innerHTML = "";
+        outputWrap.classList.add("visible");
+        askBtn.disabled = true;
+
+        let fullText = "";
+
+        // blinking cursor
+        cursor = document.createElement("span");
+        cursor.className = "cursor";
+        output.appendChild(cursor);
+
+        const eventSource = new EventSource(
+          "/stream?" + new URLSearchParams(formData),
+        );
+
+        eventSource.onmessage = function (event) {
+          if (cursor) cursor.remove();
+          fullText += event.data.replace(/\\n/g, "\n");
+          output.innerHTML = marked.parse(fullText);
+          output.appendChild(cursor);
+        };
+
+        eventSource.onerror = function () {
+          eventSource.close();
+          if (cursor) cursor.remove();
+          askBtn.disabled = false;
+        };
+      });
+    </script>
+  </body>
+</html>
