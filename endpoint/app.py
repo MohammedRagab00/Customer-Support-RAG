@@ -1,8 +1,19 @@
 from flask import Flask, render_template, request, Response, jsonify
 from llm import chain, extract_text
 from retriever import retrieve, build_context
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from errors import register_error_handlers
 
 app = Flask(__name__)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://",
+)
+
+register_error_handlers(app)
 
 
 @app.route("/")
@@ -11,6 +22,7 @@ def index():
 
 
 @app.route("/stream")
+@limiter.limit("1 per minute")
 def stream():
     user_input = request.args.get("user_input")
 
