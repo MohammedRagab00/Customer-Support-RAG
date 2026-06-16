@@ -5,6 +5,7 @@ from flask_limiter.util import get_remote_address
 from src.errors import register_error_handlers
 from src.llm import chain, extract_text
 from src.retriever import retrieve, build_context
+
 # from flask_cors import CORS
 from src.db import init_db, log_query, get_recent_logs, get_metrics, set_rating
 from src.config import AI_MODEL
@@ -92,7 +93,7 @@ def ask():
 @app.route("/api/health")
 def api_health():
     """Quick liveness check used by the dashboard header badge."""
-    return jsonify({"status": "ok", "model": "gemini"})
+    return jsonify({"status": "ok", "model": AI_MODEL})
 
 
 @app.route("/api/logs")
