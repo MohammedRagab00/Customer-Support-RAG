@@ -5,6 +5,7 @@ load_dotenv()
 
 AI_API_KEY = os.getenv("AI_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+AI_MODEL = "gemini-3.1-flash-lite"  # other options (gemini-3-flash-preview | gemini-3.1-pro-preview)
 
 TOP_K = 3
 

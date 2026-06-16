@@ -11,11 +11,9 @@ In Docker, mount a volume to persist it across container restarts.
 """
 
 import sqlite3
-import time
-import os
 from contextlib import contextmanager
 
-DB_PATH = os.environ.get("RAG_DB_PATH", "rag_logs.db")
+DB_PATH = "rag_logs.db"
 
 # ── Schema ─────────────────────────────────────────────────────────────────────
 
@@ -40,11 +38,12 @@ CREATE TABLE IF NOT EXISTS ratings (
 
 # ── Connection helper ──────────────────────────────────────────────────────────
 
+
 @contextmanager
 def _get_conn():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")   # safe for concurrent reads
+    conn.execute("PRAGMA journal_mode=WAL")  # safe for concurrent reads
     conn.execute("PRAGMA foreign_keys=ON")
     try:
         yield conn
@@ -58,14 +57,20 @@ def _get_conn():
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 
+
 def init_db():
     """Create tables if they don't exist. Call once at app startup."""
     with _get_conn() as conn:
         conn.executescript(_DDL)
 
 
-def log_query(user_input: str, answer: str, chunks_used: int,
-              latency_ms: int, model: str = "unknown") -> int:
+def log_query(
+    user_input: str,
+    answer: str,
+    chunks_used: int,
+    latency_ms: int,
+    model: str = "unknown",
+) -> int:
     """Insert a query/answer pair and return its auto-generated id."""
     with _get_conn() as conn:
         cur = conn.execute(
@@ -136,8 +141,8 @@ def get_metrics() -> dict:
             """
         ).fetchone()
 
-        pos   = sat_row["pos"]   or 0
-        rated = sat_row["rated"] or 1          # avoid div/0
+        pos = sat_row["pos"] or 0
+        rated = sat_row["rated"] or 1  # avoid div/0
         satisfaction_rate = round(pos / rated, 4)
 
         # ── Hourly timeline for the last 7 hours ──────────────────────────────
@@ -155,14 +160,14 @@ def get_metrics() -> dict:
 
     return {
         "total_queries_today": today_count,
-        "avg_latency_ms":      round(latency_row["avg_all"]   or 0),
+        "avg_latency_ms": round(latency_row["avg_all"] or 0),
         "avg_latency_today_ms": round(latency_row["avg_today"] or 0),
-        "satisfaction_rate":   satisfaction_rate,
+        "satisfaction_rate": satisfaction_rate,
         # Frontend will compute change % itself; send 0 placeholders for now
-        "queries_change":      0,
-        "latency_change":      0,
+        "queries_change": 0,
+        "latency_change": 0,
         "satisfaction_change": 0,
-        "faithfulness_score":  0.91,   # placeholder until RAGAS pipeline writes here
+        "faithfulness_score": 0.91,  # placeholder until RAGAS pipeline writes here
         "faithfulness_change": 0,
         "hourly_timeline": [dict(r) for r in hourly],
     }
