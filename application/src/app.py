@@ -5,17 +5,14 @@ from flask_limiter.util import get_remote_address
 from src.errors import register_error_handlers
 from src.llm import chain, extract_text
 from src.retriever import retrieve, build_context
-
-# from flask_cors import CORS
 from src.db import init_db, log_query, get_recent_logs, get_metrics, set_rating
 from src.config import AI_MODEL
 
 app = Flask(__name__)
-# CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173/"}})
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["200 per day", "50 per hour"],
+    default_limits=["500 per day", "100 per hour"],
     storage_uri="memory://",
 )
 
@@ -91,14 +88,12 @@ def ask():
 
 
 @app.route("/api/health")
-@limiter.exempt
 def api_health():
     """Quick liveness check used by the dashboard header badge."""
     return jsonify({"status": "ok", "model": AI_MODEL})
 
 
 @app.route("/api/logs")
-@limiter.exempt
 def api_logs():
     """
     GET /api/logs?limit=50
@@ -110,7 +105,6 @@ def api_logs():
 
 
 @app.route("/api/metrics")
-@limiter.exempt
 def api_metrics():
     """
     GET /api/metrics
@@ -120,7 +114,6 @@ def api_metrics():
 
 
 @app.route("/api/rate", methods=["POST"])
-@limiter.exempt
 def api_rate():
     """
     POST /api/rate   body: { log_id: int, rating: 'positive'|'negative' }
@@ -140,32 +133,33 @@ def api_rate():
 
 
 @app.route("/api/experiments")
-@limiter.exempt
 def api_experiments():
     return jsonify([])
 
 
 @app.route("/api/pipeline")
-@limiter.exempt
 def api_pipeline():
-    return jsonify({
-        "current_stage": "idle",
-        "progress": 0,
-        "started_at": None,
-        "estimated_completion": None,
-        "stages": [],
-        "history": []
-    })
+    return jsonify(
+        {
+            "current_stage": "idle",
+            "progress": 0,
+            "started_at": None,
+            "estimated_completion": None,
+            "stages": [],
+            "history": [],
+        }
+    )
 
 
 @app.route("/api/embeddings")
-@limiter.exempt
 def api_embeddings():
-    return jsonify({
-        "last_refresh": None,
-        "next_refresh": None,
-        "status": "idle",
-        "docs_indexed": 0,
-        "new_docs_pending": 0,
-        "history": []
-    })
+    return jsonify(
+        {
+            "last_refresh": None,
+            "next_refresh": None,
+            "status": "idle",
+            "docs_indexed": 0,
+            "new_docs_pending": 0,
+            "history": [],
+        }
+    )
